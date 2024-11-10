@@ -1,0 +1,276 @@
+DAA1
+#include<bits/stdc++.h>
+using namespace std;
+
+int fibonacci(int n){
+    if(n<=1){
+        return n;
+    }else{
+        return fibonacci(n-1)+fibonacci(n-2);
+    }
+}
+int main()
+{
+    int n;
+    cout<<"enter number:";
+    cin>>n;
+    for(int i=0;i<n;i++){
+        cout<<fibonacci(i)<<" ";    
+    }
+    return 0;
+}
+
+DAA2
+#include <iostream>
+#include <queue>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// Node class to represent each character and its frequency
+class Node {
+public:
+    int freq;
+    string symbol;
+    Node* left;
+    Node* right;
+    string huff;
+
+    Node(int f, string s, Node* l = nullptr, Node* r = nullptr) 
+        : freq(f), symbol(s), left(l), right(r), huff("") {}
+
+    // Overload the less-than operator for priority queue sorting
+    bool operator<(const Node& other) const {
+        return freq > other.freq; // For min-heap, use freq < other.freq
+    }
+};
+
+// Recursive function to print Huffman codes from the tree
+void printNodes(Node* node, string val = "") {
+    string newval = val + node->huff;
+    if (node->left) {
+        printNodes(node->left, newval);
+    }
+    if (node->right) {
+        printNodes(node->right, newval);
+    }
+    if (!node->left && !node->right) {
+        cout << node->symbol << " -> " << newval << endl;
+    }
+}
+
+int main() {
+    vector<string> chars = {"a", "b", "c", "d", "e", "f"};
+    vector<int> freqs = {5, 9, 12, 13, 16, 45};
+
+    // Priority queue to implement min-heap
+    auto compare = [](Node* left, Node* right) { return left->freq > right->freq; };
+    priority_queue<Node*, vector<Node*>, decltype(compare)> nodes(compare);
+
+    // Insert all characters and their frequencies into the priority queue
+    for (int i = 0; i < chars.size(); i++) {
+        nodes.push(new Node(freqs[i], chars[i]));
+    }
+
+    // Combine nodes until only one node remains
+    while (nodes.size() > 1) {
+        Node* left = nodes.top();
+        nodes.pop();
+        Node* right = nodes.top();
+        nodes.pop();
+
+        // Assign '0' and '1' to left and right children
+        left->huff = "0";
+        right->huff = "1";
+
+        // Combine the nodes
+        Node* newnode = new Node(left->freq + right->freq, left->symbol + right->symbol, left, right);
+        nodes.push(newnode);
+    }
+
+    // Print Huffman codes for each character
+    printNodes(nodes.top());
+
+    // Clean up allocated nodes
+    delete nodes.top();
+
+    return 0;
+}
+
+
+DAA3
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Item {
+    int weight, value;
+};
+
+bool compare(const Item& a, const Item& b) {
+    return (double)a.value / a.weight > (double)b.value / b.weight;
+}
+
+double fractionalKnapsack(int W, vector<Item>& items) {
+    sort(items.begin(), items.end(), compare);
+
+    double maxProfit = 0.0;
+    for (const auto& item : items) {
+        if (W == 0) break;
+        if (item.weight <= W) {
+            maxProfit += item.value;
+            W -= item.weight;
+        } else {
+            maxProfit += item.value * ((double)W / item.weight);
+            break;
+        }
+    }
+    return maxProfit;
+}
+
+int main() {
+    int n, W;
+    cout << "Enter number of items and max weight: ";
+    cin >> n >> W;
+    
+    vector<Item> items(n);
+    cout << "Enter weight and value of each item:\n";
+    for (int i = 0; i < n; i++) {
+        cin >> items[i].weight >> items[i].value;
+    }
+
+    cout << "Maximum profit: " << fractionalKnapsack(W, items) << endl;
+    return 0;
+}
+
+DAA4
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// Function to solve 0-1 Knapsack problem using Dynamic Programming
+int knapsackDP(int W, const vector<int>& weights, const vector<int>& values, int n) {
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    // Build the dp table
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            if (weights[i - 1] <= w) {
+                dp[i][w] = max(dp[i - 1][w], values[i - 1] + dp[i - 1][w - weights[i - 1]]);
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    return dp[n][W];
+}
+
+int main() {
+    int n, W;
+    cout << "Enter the number of items: ";
+    cin >> n;
+    cout << "Enter the maximum weight capacity of the knapsack: ";
+    cin >> W;
+
+    vector<int> weights(n), values(n);
+    cout << "Enter the weights of the items:\n";
+    for (int i = 0; i < n; i++) {
+        cin >> weights[i];
+    }
+
+    cout << "Enter the values of the items:\n";
+    for (int i = 0; i < n; i++) {
+        cin >> values[i];
+    }
+
+    int maxProfit = knapsackDP(W, weights, values, n);
+    cout << "Maximum profit achievable: " << maxProfit << endl;
+
+    return 0;
+}
+
+DAA5
+#include <bits/stdc++.h>
+using namespace std;
+
+bool isSafe(int** arr, int x, int y, int n) {
+    for (int row = 0; row < x; row++) {
+        if (arr[row][y] == 1) {
+            return false;
+        }
+    }
+
+    int row = x;
+    int col = y;
+    while (row >= 0 && col >= 0) {
+        if (arr[row][col] == 1) {
+            return false;
+        }
+        row--;
+        col--;
+    }
+
+    row = x;
+    col = y;
+    while (row >= 0 && col < n) { // Fixed this condition
+        if (arr[row][col] == 1) {
+            return false;
+        }
+        row--;
+        col++;
+    }
+
+    return true;
+}
+
+bool nQueen(int** arr, int x, int n) {
+    if (x >= n) {
+        return true;
+    }
+
+    for (int col = 0; col < n; col++) {
+        if (isSafe(arr, x, col, n)) {
+            arr[x][col] = 1;
+
+            if (nQueen(arr, x + 1, n)) {
+                return true;
+            }
+
+            arr[x][col] = 0; // Backtrack
+        }
+    }
+
+    return false;
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    int** arr = new int*[n];
+    for (int i = 0; i < n; i++) {
+        arr[i] = new int[n]; // Fixed allocation of columns
+        for (int j = 0; j < n; j++) {
+            arr[i][j] = 0;
+        }
+    }
+
+    if (nQueen(arr, 0, n)) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                cout << arr[i][j] << " ";
+            }
+            cout << endl;
+        }
+    } else {
+        cout << "Solution does not exist" << endl;
+    }
+
+    return 0;
+}
